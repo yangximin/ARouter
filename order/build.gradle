@@ -1,0 +1,43 @@
+if (isRelease) {
+    apply plugin: 'com.android.library'
+} else {
+    apply plugin: 'com.android.application'
+}
+def rootAndroidId = rootProject.ext.androidId
+def support = rootProject.ext.dependencies
+def appId = rootProject.ext.appId
+android {
+    compileSdkVersion rootAndroidId.compileSdkVersion
+    buildToolsVersion rootAndroidId.buildToolsVersion
+    defaultConfig {
+        if (!isRelease) {
+            applicationId appId.personal
+        }
+        minSdkVersion rootAndroidId.minSdkVersion
+        targetSdkVersion rootAndroidId.targetSdkVersion
+        versionCode rootAndroidId.versionCode
+        versionName rootAndroidId.versionName
+        buildConfigField("boolean", "isRelease", String.valueOf(isRelease))
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [moduleName: project.getName(), packageNameForAPT: packeageNameForAPT]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    support.each { k, v -> implementation v }
+    implementation project(':baselib')
+    implementation project(':arouter_annotation')
+    annotationProcessor project(':arouter_compiler') // 注解处理器
+}
